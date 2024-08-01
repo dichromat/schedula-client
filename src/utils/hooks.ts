@@ -3,6 +3,8 @@ import { Assignment, AssignmentInfo } from "../utils/types";
 import { useState, useRef, useEffect } from "react";
 
 export function useAssignments([username, iv, token, navigate]: [string, string, string, NavigateFunction]) {
+    const apiUrl = import.meta.env.VITE_API_URL
+
     const dbInit = useRef(false)
 
     const hydrated = (info: AssignmentInfo) => {
@@ -62,7 +64,7 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
             error: string
         }
         const initializeAssignments = async () => {
-            const response = await fetch('http://localhost:3000/data', {
+            const response = await fetch(`${apiUrl}/data`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

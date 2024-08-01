@@ -5,13 +5,15 @@ interface LoginProps {
 }
 
 export default function Login({setUserdata}: LoginProps) {
+    const apiUrl = import.meta.env.VITE_API_URL
+
     const navigate = useNavigate()
 
     const signUp = async () => {
         const usernameInput = (document.getElementById("username-input") as HTMLInputElement).value
         const passwordInput = (document.getElementById("password-input") as HTMLInputElement).value
 
-        const response = await fetch('http://localhost:3000/signup', {
+        const response = await fetch(`${apiUrl}/signup`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +50,7 @@ export default function Login({setUserdata}: LoginProps) {
         const usernameInput = (document.getElementById("username-input") as HTMLInputElement).value
         const passwordInput = (document.getElementById("password-input") as HTMLInputElement).value
 
-        const response = await fetch('http://localhost:3000/login', {
+        const response = await fetch(`${apiUrl}/login`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

@@ -9,6 +9,8 @@ interface AssignmentsProps {
 }
 
 export default function Assignments({userdata: [username, iv, token, tokenIssued]}: AssignmentsProps) {
+    const apiUrl = import.meta.env.VITE_API_URL
+
     const navigate = useNavigate()
     useEffect(() => {
         if (!username || !iv || !token || !tokenIssued) {
@@ -40,7 +42,7 @@ export default function Assignments({userdata: [username, iv, token, tokenIssued
     }
 
     const saveToDb = useCallback(async () => {
-        const response = await fetch('http://localhost:3000/save', {
+        const response = await fetch(`${apiUrl}/save`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

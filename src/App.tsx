@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import { useChange } from './utils/hooks.ts';
 
 function App() {
+  const apiUrl = import.meta.env.VITE_API_URL
+
   const [userdata, setUserdata] = useState<string[]>(() => {
     return [localStorage.getItem('username') || "", localStorage.getItem('iv') || "", localStorage.getItem('token') || "", localStorage.getItem('tokenIssued') || ""]
   })
@@ -20,7 +22,7 @@ function App() {
   useEffect(() => {
     console.log("Created 50 mins")
     const refreshToken = setInterval(async () => {
-      const response = await fetch('http://localhost:3000/refresh_token', {
+      const response = await fetch(`${apiUrl}/refresh_token`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

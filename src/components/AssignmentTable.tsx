@@ -1,3 +1,5 @@
+import red_cross_png from '../assets/red-cross.png'
+
 import { useState } from "react";
 import SortableCategory from "./SortableCategory";
 import {formatDate, compareFormattedDates} from "../utils/dateUtils";
@@ -89,7 +91,7 @@ export default function AssignmentTable({assignments, setAssignments, $setAssign
                                     <>
                                         <input onClick={handleCompleted} className="mx-2" type="checkbox" />
                                         <button onClick={handleRemove} className="btn remover-btn">
-                                            <img src="src/assets/red-cross.png" height="22" alt="Remove" />
+                                            <img src={red_cross_png} height="22" alt="Remove" />
                                         </button>
                                     </>
                                 )}
@@ -104,7 +106,7 @@ export default function AssignmentTable({assignments, setAssignments, $setAssign
                                     <>
                                         <input onClick={handleCompleted} className="mx-2" type="checkbox" />
                                         <button onClick={handleRemove} className="btn remover-btn">
-                                            <img src="src/assets/red-cross.png" height="22" alt="Remove" />
+                                            <img src={red_cross_png} height="22" alt="Remove" />
                                         </button>
                                     </>
                                 )}

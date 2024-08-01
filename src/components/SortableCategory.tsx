@@ -1,3 +1,6 @@
+import sort_triangle_png from '../assets/sort_triangle.png'
+import sort_triangle_flipped_png from '../assets/sort_triangle_flipped.png'
+
 interface SortableCategoryProps {
     category:string;
     hoveredCategory:number;
@@ -20,14 +23,14 @@ export default function SortableCategory({category, hoveredCategory, id, activat
                             <div className="row">
                                 <div className="col">
                                     <button onClick={ascendingSortingMethod} className="btn sorting-btn">
-                                        <img src="src/assets/sort_triangle_flipped.png" height="11" alt="Sort"/>
+                                        <img src={sort_triangle_flipped_png} height="11" alt="Sort"/>
                                     </button>
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="col">
                                     <button onClick={descendingSortingMethod} className="btn sorting-btn">
-                                        <img src="src/assets/sort_triangle.png" height="11" alt="Sort"/>
+                                        <img src={sort_triangle_png} height="11" alt="Sort"/>
                                     </button> 
                                 </div>
                             </div>

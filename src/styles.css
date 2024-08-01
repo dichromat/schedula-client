@@ -1,0 +1,40 @@
+.box {
+    background-color: lightblue;
+    border: 1px solid blue;
+    min-height: 50px;
+    font-size: 2rem;
+}
+
+.navbar {
+    background-color: blue;
+}
+
+.remover-btn {
+    --bs-btn-padding-x: 0;
+    margin-bottom: 4px;
+}
+
+.sorting-btn {
+    --bs-btn-padding-x: 0;
+    --bs-btn-padding-y: 0;
+    border: 0;
+}
+
+.full-height {
+    height: 100vh; /* 100% of the viewport height */
+    display: flex;
+    flex-direction: column;
+}
+  
+.h-10 {
+    height: 15%;
+}
+
+.background-blue {
+    background-color: lightskyblue;
+}
+
+.welcome-text {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-size:xx-large;
+}

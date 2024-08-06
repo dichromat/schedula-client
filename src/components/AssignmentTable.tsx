@@ -4,16 +4,16 @@ import { useState } from "react";
 import SortableCategory from "./SortableCategory";
 import {formatDate, compareFormattedDates} from "../utils/dateUtils";
 import { Assignment, AssignmentInfo } from "../utils/types";
+import { dehydrate } from '../utils/dbUtils';
 
 interface AssignmentTableProps {
     assignments: Assignment[]
     setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>>
-    $setAssignments(value: Assignment[] | ((prev: Assignment[]) => Assignment[])): void
     isTemplate: boolean
     setIsTemplate(value: boolean): void
 }
 
-export default function AssignmentTable({assignments, setAssignments, $setAssignments, isTemplate, setIsTemplate}: AssignmentTableProps) {
+export default function AssignmentTable({assignments, setAssignments, isTemplate, setIsTemplate}: AssignmentTableProps) {
     const [hoveredCategory, setHoveredCategory] = useState(0)
 
     const handleNewAssignment = () => {
@@ -28,14 +28,31 @@ export default function AssignmentTable({assignments, setAssignments, $setAssign
             id: newID,
             isStatusHovered: false,
             handleCompleted: () => {
-                $setAssignments(prev => prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment))
-
+                setAssignments(prev => {
+                    const updatedAssignments = prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment)
+                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+                    console.log("Saving assignmentsInfo to local storage")
+                    return updatedAssignments
+                })
             },
             handleRemove: () => {
-                $setAssignments(prev => prev.filter(assignment => assignment.id !== newID))
+                setAssignments(prev => {
+                    const updatedAssignments = prev.filter(assignment => assignment.id !== newID)
+                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+                    console.log("Saving assignmentsInfo to local storage")
+                    return updatedAssignments
+                })
             }
         }
-        $setAssignments([newAssignment, ...assignments])
+        setAssignments(() => {
+            const updatedAssignments = [newAssignment, ...assignments]
+            const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+            localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+            console.log("Saving assignmentsInfo to local storage")
+            return updatedAssignments
+        })
         setIsTemplate(!isTemplate)
     }
 

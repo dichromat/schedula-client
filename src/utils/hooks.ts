@@ -2,59 +2,54 @@ import { NavigateFunction } from "react-router-dom";
 import { Assignment, AssignmentInfo } from "../utils/types";
 import { useState, useRef, useEffect } from "react";
 
-export function useAssignments([username, iv, token, navigate]: [string, string, string, NavigateFunction]) {
+export function useAssignments([username, iv, token, navigate]: [string, string, string, NavigateFunction]): [Assignment[], React.Dispatch<React.SetStateAction<Assignment[]>>] {
     const apiUrl = import.meta.env.VITE_API_URL
 
     const dbInit = useRef(false)
 
-    const hydrated = (info: AssignmentInfo) => {
+    const hydrate = (info: AssignmentInfo) => {
         const newID = crypto.randomUUID()
         const hydratedAssignment: Assignment = {...info,
             id: newID,
             isStatusHovered: false,
             handleCompleted: () => {
-                $setAssignments(prev => prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment))
+                setAssignments(prev => {
+                    const updatedAssignments = prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment)
+                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+                    console.log("Saving assignmentsInfo to local storage")
+                    return updatedAssignments
+                })
             },
             handleRemove: () => {
-                $setAssignments(prev => prev.filter(assignment => assignment.id !== newID))
+                setAssignments(prev => {
+                    const updatedAssignments = prev.filter(assignment => assignment.id !== newID)
+                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+                    console.log("Saving assignmentsInfo to local storage")
+                    return updatedAssignments
+                })
             }}
         return hydratedAssignment
     }
 
-    const dehydrated = ({subject, description, dueDate, status}: Assignment) => {
+    const dehydrate = ({subject, description, dueDate, status}: Assignment) => {
         const dehydratedAssignment: AssignmentInfo = {subject, description, dueDate, status}
         return dehydratedAssignment
     }
 
-    const $setAssignments = (input: Assignment[] | ((prev: Assignment[]) => Assignment[])) => {
-        setAssignments(prevAssignments => {
-            const newAssignments = typeof input === 'function' ? input(prevAssignments) : input
-            setAssignmentsInfo(newAssignments.map(assignment => dehydrated(assignment)))
-            return newAssignments
-        })
-    }
-
-    const $setAssignmentsInfo = (input: AssignmentInfo[]) => {
-        setAssignmentsInfo(input)
-        setAssignments(input.map(assignmentInfo => hydrated(assignmentInfo)))
-    }
-
-    const [assignmentsInfo, setAssignmentsInfo] = useState<AssignmentInfo[]>(() => {
+    const [assignments, setAssignments] = useState<Assignment[]>(() => {
         const localAssignmentsInfo = localStorage.getItem('assignments')
         if (localAssignmentsInfo) {
             console.log("Initializing from local storage")
-            return JSON.parse(localAssignmentsInfo)
+            const assignmentsInfo: AssignmentInfo[] = JSON.parse(localAssignmentsInfo) || []
+            return assignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo))
         }
         else {
             console.log("Initializing from database")
             dbInit.current = true
             return []
         }
-    })
-
-    const [assignments, setAssignments] = useState<Assignment[]>(() => {
-        if (dbInit.current) return []
-        else return assignmentsInfo.map(assignmentInfo => hydrated(assignmentInfo))
     })
 
     useEffect(() => {
@@ -76,7 +71,9 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
             switch (response.status) {
                 case 200:
                     const {assignments: dbAssignmentsInfo} = data
-                    $setAssignmentsInfo(dbAssignmentsInfo)
+                    setAssignments(dbAssignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo)))
+                    localStorage.setItem("assignments", JSON.stringify(dbAssignmentsInfo))
+                    console.log("Saving assignmentsInfo to local storage")
                     break
                 case 401:
                     const { message: credentialsMessage } = data
@@ -89,16 +86,13 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
                         console.log("User Has No Assignments")
                     }
                     else console.log("An unexpected conflict occurred")
-                    $setAssignmentsInfo([])
                     break
                 case 500:
                     const { error } = data
                     console.log(error)
-                    $setAssignmentsInfo([])
                     break
                 default:
                     console.log("An unexpected error occurred")
-                    $setAssignmentsInfo([])
                     break
             }
         }
@@ -108,7 +102,7 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
         } 
     }, [])
 
-    return { assignments, assignmentsInfo, setAssignments, $setAssignments }
+    return [assignments, setAssignments]
 }
 
 export function useChange(effect: React.EffectCallback, dependencies: React.DependencyList) {

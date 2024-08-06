@@ -1,19 +1,42 @@
 import { useState } from "react"
-import { useChange } from "../utils/hooks"
+import { Assignment } from "../utils/types";
+import { NavigateFunction } from "react-router-dom";
+import { dbSave } from "../utils/dbUtils";
 
 interface NavBarProps {
   isTemplate: boolean
   setIsTemplate(value: boolean): void
-  saveToDb(): void
+  assignments: Assignment[]
+  navigate: NavigateFunction
+  username: string
+  iv: string
+  token: string
 }
 
-export default function NavBar({isTemplate, setIsTemplate, saveToDb}: NavBarProps) {
+export default function NavBar({isTemplate, setIsTemplate, assignments, username, iv, token, navigate}: NavBarProps) {
   const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async () => {
     try {
       setIsSaving(true)
-      await saveToDb()
+      const {response, data} = await dbSave(username, iv, token, assignments)
+      switch (response.status) {
+        case 200:
+            console.log("Data saved")
+            break
+        case 401:
+            const { message } = data
+            console.log(message)
+            navigate('/')
+            break
+        case 500:
+            const { error } = data
+            console.log(error)
+            break
+        default:
+            console.log("An unexpected error occurred")
+            break
+      }
       setIsSaving(false)
     }
     catch (error) {
@@ -21,6 +44,7 @@ export default function NavBar({isTemplate, setIsTemplate, saveToDb}: NavBarProp
     }
   }
 
+  /*
   useChange(() => {
     const autosave = setTimeout(handleSave, 10000)
     console.log("Created")
@@ -29,7 +53,8 @@ export default function NavBar({isTemplate, setIsTemplate, saveToDb}: NavBarProp
       clearTimeout(autosave)
       console.log("Cleared")
     }
-  }, [saveToDb])
+  }, [assignments])
+  */
 
   return (
       <nav className="navbar navbar-expand py-3">

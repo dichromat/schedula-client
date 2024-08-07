@@ -2,7 +2,7 @@ import { NavigateFunction } from "react-router-dom";
 import { Assignment, AssignmentInfo } from "../utils/types";
 import { useState, useRef, useEffect } from "react";
 
-export function useAssignments([username, iv, token, navigate]: [string, string, string, NavigateFunction]): [Assignment[], React.Dispatch<React.SetStateAction<Assignment[]>>] {
+export function useAssignments([username, iv, token, navigate]: [string, string, string, NavigateFunction]): [Assignment[], React.Dispatch<React.SetStateAction<Assignment[]>>, (value: AssignmentInfo) => Assignment] {
     const apiUrl = import.meta.env.VITE_API_URL
 
     const dbInit = useRef(false)
@@ -73,7 +73,7 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
                     const {assignments: dbAssignmentsInfo} = data
                     setAssignments(dbAssignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo)))
                     localStorage.setItem("assignments", JSON.stringify(dbAssignmentsInfo))
-                    console.log("Saving assignmentsInfo to local storage")
+                    console.log("Saving fetched assignmentsInfo to local storage")
                     break
                 case 401:
                     const { message: credentialsMessage } = data
@@ -102,7 +102,7 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
         } 
     }, [])
 
-    return [assignments, setAssignments]
+    return [assignments, setAssignments, hydrate]
 }
 
 export function useChange(effect: React.EffectCallback, dependencies: React.DependencyList) {
@@ -113,4 +113,20 @@ export function useChange(effect: React.EffectCallback, dependencies: React.Depe
             return cleanup
         }
     }, dependencies)
+}
+
+export function useSafeTimeout(task: () => void, time: number) {
+    const prevTimeout = useRef<(undefined | NodeJS.Timeout)>()
+
+    const safeSetTimeout = () => {
+        if (prevTimeout.current) {
+            console.log("Cleared")
+            clearTimeout(prevTimeout.current)
+        }
+        const timeout = setTimeout(task, time)
+        prevTimeout.current = timeout
+        console.log("Created")
+    }
+
+    return safeSetTimeout
 }

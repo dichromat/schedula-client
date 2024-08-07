@@ -1,10 +1,9 @@
 import { useNavigate } from "react-router-dom"
+import { useUserdataContext } from "../contexts/userdata-context"
 
-interface LoginProps {
-    setUserdata(value: string[]): void 
-}
+export default function Login() {
+    const {setUserdata} = useUserdataContext()
 
-export default function Login({setUserdata}: LoginProps) {
     const apiUrl = import.meta.env.VITE_API_URL
 
     const navigate = useNavigate()

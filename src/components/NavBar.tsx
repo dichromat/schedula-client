@@ -1,19 +1,17 @@
 import { useState } from "react"
-import { Assignment } from "../utils/types";
 import { NavigateFunction } from "react-router-dom";
 import { dbSave } from "../utils/dbUtils";
+import { useUserdataContext } from "../contexts/userdata-context";
+import { useAssignmentsContext } from "../contexts/assignments-context";
 
 interface NavBarProps {
-  isTemplate: boolean
-  setIsTemplate(value: boolean): void
-  assignments: Assignment[]
   navigate: NavigateFunction
-  username: string
-  iv: string
-  token: string
 }
 
-export default function NavBar({isTemplate, setIsTemplate, assignments, username, iv, token, navigate}: NavBarProps) {
+export default function NavBar({ navigate }: NavBarProps) {
+  const {userdata: [username, iv, token, ]} = useUserdataContext()
+  const {assignments, isTemplate, setIsTemplate} = useAssignmentsContext()
+
   const [isSaving, setIsSaving] = useState(false)
 
   const handleSave = async () => {

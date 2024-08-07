@@ -3,49 +3,23 @@ import red_cross_png from '../assets/red-cross.png'
 import { useState } from "react";
 import SortableCategory from "./SortableCategory";
 import {formatDate, compareFormattedDates} from "../utils/dateUtils";
-import { Assignment, AssignmentInfo } from "../utils/types";
+import { AssignmentInfo } from "../utils/types";
 import { dehydrate } from '../utils/dbUtils';
+import { useAssignmentsContext } from '../contexts/assignments-context';
 
-interface AssignmentTableProps {
-    assignments: Assignment[]
-    setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>>
-    isTemplate: boolean
-    setIsTemplate(value: boolean): void
-}
+export default function AssignmentTable() {
+    const {assignments, setAssignments, hydrate, isTemplate, setIsTemplate} = useAssignmentsContext()
 
-export default function AssignmentTable({assignments, setAssignments, isTemplate, setIsTemplate}: AssignmentTableProps) {
     const [hoveredCategory, setHoveredCategory] = useState(0)
 
     const handleNewAssignment = () => {
-        const newID = crypto.randomUUID()
         const newAssignmentInfo: AssignmentInfo = {
             subject: (document.getElementById("class-input") as HTMLInputElement).value,
             description: (document.getElementById("description-input") as HTMLInputElement).value,
             dueDate: formatDate((document.getElementById("due-date-input") as HTMLInputElement).value),
             status: "Not Completed",
         }
-        const newAssignment: Assignment = {...newAssignmentInfo,
-            id: newID,
-            isStatusHovered: false,
-            handleCompleted: () => {
-                setAssignments(prev => {
-                    const updatedAssignments = prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment)
-                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
-                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
-                    console.log("Saving assignmentsInfo to local storage")
-                    return updatedAssignments
-                })
-            },
-            handleRemove: () => {
-                setAssignments(prev => {
-                    const updatedAssignments = prev.filter(assignment => assignment.id !== newID)
-                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
-                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
-                    console.log("Saving assignmentsInfo to local storage")
-                    return updatedAssignments
-                })
-            }
-        }
+        const newAssignment = hydrate(newAssignmentInfo)
         setAssignments(() => {
             const updatedAssignments = [newAssignment, ...assignments]
             const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))

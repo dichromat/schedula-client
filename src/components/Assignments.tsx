@@ -1,14 +1,12 @@
 import AssignmentTable from "./AssignmentTable";
 import NavBar from "./NavBar";
-import { useState, useEffect } from "react";
-import { useAssignments } from "../utils/hooks";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserdataContext } from "../contexts/userdata-context";
 
-interface AssignmentsProps {
-    userdata: string[]
-}
+export default function Assignments() {
+    const {userdata: [username, iv, token, tokenIssued]} = useUserdataContext()
 
-export default function Assignments({userdata: [username, iv, token, tokenIssued]}: AssignmentsProps) {
     const navigate = useNavigate()
     useEffect(() => {
         if (!username || !iv || !token || !tokenIssued) {
@@ -25,15 +23,11 @@ export default function Assignments({userdata: [username, iv, token, tokenIssued
             }
         }
     }, [username, iv, token, tokenIssued])
-
-    const [isTemplate, setIsTemplate] = useState(false)
-
-    const [assignments, setAssignments] = useAssignments([username, iv, token, navigate])
     
     return (
         <>
-            <NavBar {...{ isTemplate, setIsTemplate, assignments, username, iv, token, navigate }} />
-            <AssignmentTable {...{ assignments, setAssignments, isTemplate, setIsTemplate }} />
+            <NavBar {...{ navigate }} />
+            <AssignmentTable />
         </>
     )
 }

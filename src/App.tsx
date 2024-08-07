@@ -1,23 +1,23 @@
 import Assignments from './components/Assignments.tsx';
 import Login from './components/Login.tsx';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useChange } from './utils/hooks.ts';
+import { useUserdataContext } from './contexts/userdata-context.tsx';
+import { AssignmentsProvider } from './contexts/assignments-context.tsx';
 
 function App() {
   const apiUrl = import.meta.env.VITE_API_URL
 
-  const [userdata, setUserdata] = useState<string[]>(() => {
-    return [localStorage.getItem('username') || "", localStorage.getItem('iv') || "", localStorage.getItem('token') || "", localStorage.getItem('tokenIssued') || ""]
-  })
+  const {userdata: [username, iv, token, tokenIssued], setUserdata} = useUserdataContext()
 
   useChange(() => {
-    localStorage.setItem('username', userdata[0])
-    localStorage.setItem('iv', userdata[1])
-    localStorage.setItem('token', userdata[2])
-    localStorage.setItem('tokenIssued', userdata[3])
+    localStorage.setItem('username', username)
+    localStorage.setItem('iv', iv)
+    localStorage.setItem('token', token)
+    localStorage.setItem('tokenIssued', tokenIssued)
     console.log("Saving...")
-  }, [userdata])
+  }, [username, iv, token, tokenIssued])
 
   useEffect(() => {
     console.log("Created 50 mins")
@@ -27,15 +27,15 @@ function App() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({"username": userdata[0], "iv": userdata[1], "token": userdata[2]})
+        body: JSON.stringify({username, iv, token})
       })
 
       const data = await response.json()
       switch (response.status) {
         case 200:
-            const {iv, token} = data
+            const {newIv, newToken} = data
             const timeString = new Date().toISOString()
-            setUserdata([userdata[0], iv, token, timeString])
+            setUserdata([username, newIv, newToken, timeString])
             break
         case 401:
             const { message } = data
@@ -60,8 +60,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login {...{ setUserdata }} />}></Route>
-        <Route path="/assignments" element={<Assignments {...{ userdata }} />}></Route>
+        <Route path="/" element={<Login />}></Route>
+        <Route path="/assignments" element={
+          <AssignmentsProvider>
+            <Assignments />
+          </AssignmentsProvider>
+          }></Route>
       </Routes>
     </Router>
   )

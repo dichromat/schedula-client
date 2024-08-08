@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useChange } from './utils/hooks.ts';
 import { useUserdataContext } from './contexts/userdata-context.tsx';
 import { AssignmentsProvider } from './contexts/assignments-context.tsx';
+import { SaveButtonProvider } from './contexts/save-button-context.tsx';
 
 function App() {
   const apiUrl = import.meta.env.VITE_API_URL
@@ -62,9 +63,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />}></Route>
         <Route path="/assignments" element={
-          <AssignmentsProvider>
-            <Assignments />
-          </AssignmentsProvider>
+          <SaveButtonProvider>
+            <AssignmentsProvider>
+              <Assignments />
+            </AssignmentsProvider>
+          </SaveButtonProvider>
           }></Route>
       </Routes>
     </Router>

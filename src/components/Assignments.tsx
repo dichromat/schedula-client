@@ -27,7 +27,7 @@ export default function Assignments() {
     return (
         <>
             <NavBar {...{ navigate }} />
-            <AssignmentTable />
+            <AssignmentTable {...{ navigate }} />
         </>
     )
 }

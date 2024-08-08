@@ -1,8 +1,23 @@
 import { NavigateFunction } from "react-router-dom";
 import { Assignment, AssignmentInfo } from "../utils/types";
 import { useState, useRef, useEffect } from "react";
+import { useStoreState } from "./stateUtils";
 
-export function useAssignments([username, iv, token, navigate]: [string, string, string, NavigateFunction]): [Assignment[], React.Dispatch<React.SetStateAction<Assignment[]>>, (value: AssignmentInfo) => Assignment] {
+interface useAssignmentsProps {
+    username: string
+    iv: string
+    token: string
+    navigate: NavigateFunction
+    saveToDb: (assignments: Assignment[]) => Promise<{
+        response: Response;
+        data: any;
+    }>
+    setIsSaving: React.Dispatch<React.SetStateAction<boolean>>
+    setSafeTimeout: (task: () => void, time: number) => void
+
+}
+
+export function useAssignments({username, iv, token, navigate, saveToDb, setIsSaving, setSafeTimeout}: useAssignmentsProps): [Assignment[], (data: ["value", Assignment[]] | ["operation", (input: Assignment[]) => Assignment[]]) => Assignment[], (value: AssignmentInfo) => Assignment] {
     const apiUrl = import.meta.env.VITE_API_URL
 
     const dbInit = useRef(false)
@@ -13,22 +28,23 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
             id: newID,
             isStatusHovered: false,
             handleCompleted: () => {
-                setAssignments(prev => {
-                    const updatedAssignments = prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment)
-                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
-                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
-                    console.log("Saving assignmentsInfo to local storage")
-                    return updatedAssignments
-                })
+                const updatedAssignments = storeAssignments(["operation", prev => prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment)])
+                const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+                localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+                console.log("Saving assignmentsInfo to local storage")
+
+                const handleSave = useNavBarHandleSave({ assignments: updatedAssignments, navigate, saveToDb, setIsSaving })
+                setSafeTimeout(handleSave, 10000)
             },
             handleRemove: () => {
-                setAssignments(prev => {
-                    const updatedAssignments = prev.filter(assignment => assignment.id !== newID)
-                    const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
-                    localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
-                    console.log("Saving assignmentsInfo to local storage")
-                    return updatedAssignments
-                })
+                const updatedAssignments = storeAssignments(["operation", prev => prev.filter(assignment => assignment.id !== newID)])
+
+                const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
+                localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
+                console.log("Saving assignmentsInfo to local storage")
+
+                const handleSave = useNavBarHandleSave({ assignments: updatedAssignments, navigate, saveToDb, setIsSaving })
+                setSafeTimeout(handleSave, 10000)
             }}
         return hydratedAssignment
     }
@@ -52,6 +68,8 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
         }
     })
 
+    const storeAssignments = useStoreState<Assignment[]>(assignments, setAssignments)
+
     useEffect(() => {
         interface AssignmentsResponse {
             assignments: AssignmentInfo[]
@@ -71,7 +89,7 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
             switch (response.status) {
                 case 200:
                     const {assignments: dbAssignmentsInfo} = data
-                    setAssignments(dbAssignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo)))
+                    storeAssignments(["value", dbAssignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo))])
                     localStorage.setItem("assignments", JSON.stringify(dbAssignmentsInfo))
                     console.log("Saving fetched assignmentsInfo to local storage")
                     break
@@ -102,7 +120,7 @@ export function useAssignments([username, iv, token, navigate]: [string, string,
         } 
     }, [])
 
-    return [assignments, setAssignments, hydrate]
+    return [assignments, storeAssignments, hydrate]
 }
 
 export function useChange(effect: React.EffectCallback, dependencies: React.DependencyList) {
@@ -115,10 +133,10 @@ export function useChange(effect: React.EffectCallback, dependencies: React.Depe
     }, dependencies)
 }
 
-export function useSafeTimeout(task: () => void, time: number) {
+export function useSafeTimeout() {
     const prevTimeout = useRef<(undefined | NodeJS.Timeout)>()
 
-    const safeSetTimeout = () => {
+    const safeSetTimeout = (task: () => void, time: number) => {
         if (prevTimeout.current) {
             console.log("Cleared")
             clearTimeout(prevTimeout.current)
@@ -129,4 +147,46 @@ export function useSafeTimeout(task: () => void, time: number) {
     }
 
     return safeSetTimeout
+}
+
+interface useNavBarHandleSaveProps {
+    assignments: Assignment[]
+    navigate: NavigateFunction
+    saveToDb: (assignments: Assignment[]) => Promise<{
+        response: Response;
+        data: any;
+    }>
+    setIsSaving: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+export const useNavBarHandleSave = ({assignments, navigate, saveToDb, setIsSaving}: useNavBarHandleSaveProps) => {
+
+    const handleSave = async () => {
+        try {
+          setIsSaving(true)
+          const {response, data} = await saveToDb(assignments)
+          switch (response.status) {
+            case 200:
+                console.log("Data saved")
+                break
+            case 401:
+                const { message } = data
+                console.log(message)
+                navigate('/')
+                break
+            case 500:
+                const { error } = data
+                console.log(error)
+                break
+            default:
+                console.log("An unexpected error occurred")
+                break
+          }
+          setIsSaving(false)
+        }
+        catch (error) {
+          console.log(error)
+        }
+    }
+    return handleSave
 }

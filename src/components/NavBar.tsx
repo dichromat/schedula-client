@@ -1,8 +1,8 @@
-import { useState } from "react"
 import { NavigateFunction } from "react-router-dom";
 import { dbSave } from "../utils/dbUtils";
 import { useUserdataContext } from "../contexts/userdata-context";
 import { useAssignmentsContext } from "../contexts/assignments-context";
+import { useSaveButtonContext } from "../contexts/save-button-context";
 
 interface NavBarProps {
   navigate: NavigateFunction
@@ -11,13 +11,14 @@ interface NavBarProps {
 export default function NavBar({ navigate }: NavBarProps) {
   const {userdata: [username, iv, token, ]} = useUserdataContext()
   const {assignments, isTemplate, setIsTemplate} = useAssignmentsContext()
+  const {isSaving, setIsSaving} = useSaveButtonContext()
 
-  const [isSaving, setIsSaving] = useState(false)
+  const saveToDb = dbSave(username, iv, token)
 
   const handleSave = async () => {
     try {
       setIsSaving(true)
-      const {response, data} = await dbSave(username, iv, token, assignments)
+      const {response, data} = await saveToDb(assignments)
       switch (response.status) {
         case 200:
             console.log("Data saved")

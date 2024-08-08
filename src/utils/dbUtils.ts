@@ -6,7 +6,7 @@ export const dehydrate = ({subject, description, dueDate, status}: Assignment) =
     return dehydratedAssignment
 }
 
-export const dbSave = async (username: string, iv: string, token: string, assignments: Assignment[]) => {
+export const dbSave = (username: string, iv: string, token: string) => async (assignments: Assignment[]) => {
     const response = await fetch(`${apiUrl}/save`, {
         method: 'PUT',
         headers: {

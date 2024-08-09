@@ -36,7 +36,7 @@ export default function AssignmentTable({navigate}: AssignmentTableProps) {
         const newAssignment = hydrate(newAssignmentInfo)
 
         const updatedAssignments = [newAssignment, ...assignments]
-        storeAssignments(["value", updatedAssignments])
+        storeAssignments(updatedAssignments)
 
         const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
         localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
@@ -54,17 +54,17 @@ export default function AssignmentTable({navigate}: AssignmentTableProps) {
                 <thead>
                     <tr>
                         <th className="col-2"><SortableCategory category="Class" hoveredCategory={hoveredCategory} id={1} activatingMethod={(id) => setHoveredCategory(id)}
-                        ascendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return b.subject.localeCompare(a.subject, 'en', { sensitivity: 'base' })})])}}
-                        descendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return a.subject.localeCompare(b.subject, 'en', { sensitivity: 'base' })})])}} /></th>
+                        ascendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return b.subject.localeCompare(a.subject, 'en', { sensitivity: 'base' })}))}}
+                        descendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return a.subject.localeCompare(b.subject, 'en', { sensitivity: 'base' })}))}} /></th>
                         <th className="col-2"><SortableCategory category="Description" hoveredCategory={hoveredCategory} id={2} activatingMethod={(id) => setHoveredCategory(id)}
-                        ascendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return b.description.localeCompare(a.description, 'en', { sensitivity: 'base' })})])}}
-                        descendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return a.description.localeCompare(b.description, 'en', { sensitivity: 'base' })})])}} /></th>
+                        ascendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return b.description.localeCompare(a.description, 'en', { sensitivity: 'base' })}))}}
+                        descendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return a.description.localeCompare(b.description, 'en', { sensitivity: 'base' })}))}} /></th>
                         <th className="col-2"><SortableCategory category="Due Date" hoveredCategory={hoveredCategory} id={3} activatingMethod={(id) => setHoveredCategory(id)}
-                        ascendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return compareFormattedDates(b.dueDate, a.dueDate)})])}}
-                        descendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return compareFormattedDates(a.dueDate, b.dueDate)})])}} /></th>
+                        ascendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return compareFormattedDates(b.dueDate, a.dueDate)}))}}
+                        descendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return compareFormattedDates(a.dueDate, b.dueDate)}))}} /></th>
                         <th className="col-2"><SortableCategory category="Status" hoveredCategory={hoveredCategory} id={4} activatingMethod={(id) => setHoveredCategory(id)}
-                        ascendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return b.status.localeCompare(a.status, 'en', { sensitivity: 'base' })})])}}
-                        descendingSortingMethod={() => {storeAssignments(["operation", prev => [...prev].sort((a,b) => {return a.status.localeCompare(b.status, 'en', { sensitivity: 'base' })})])}}
+                        ascendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return b.status.localeCompare(a.status, 'en', { sensitivity: 'base' })}))}}
+                        descendingSortingMethod={() => {storeAssignments(prev => [...prev].sort((a,b) => {return a.status.localeCompare(b.status, 'en', { sensitivity: 'base' })}))}}
                          /></th>
                     </tr>
                 </thead>
@@ -91,9 +91,9 @@ export default function AssignmentTable({navigate}: AssignmentTableProps) {
                             <td className="col-6">{description}</td>
                             <td className="col-2">{dueDate}</td>
                             {status == "Completed" ? <td onMouseEnter={() => {
-                                storeAssignments(["operation", prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: true} : assignment)])
+                                storeAssignments(prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: true} : assignment))
                             }} onMouseLeave={() => {
-                                storeAssignments(["operation", prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: false} : assignment)])
+                                storeAssignments(prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: false} : assignment))
                             }} className="col-2 table-success">
                                 {status}
                                 {isStatusHovered && (
@@ -106,9 +106,9 @@ export default function AssignmentTable({navigate}: AssignmentTableProps) {
                                 )}
                                 </td>
                              : <td onMouseEnter={() => {
-                                storeAssignments(["operation", prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: true} : assignment)])
+                                storeAssignments(prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: true} : assignment))
                             }} onMouseLeave={() => {
-                                storeAssignments(["operation", prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: false} : assignment)])
+                                storeAssignments(prev => prev.map(assignment => assignment.id == id ? {...assignment, isStatusHovered: false} : assignment))
                             }} className="col-2 table-danger">
                                 {status}
                                 {isStatusHovered && (

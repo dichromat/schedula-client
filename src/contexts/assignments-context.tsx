@@ -8,7 +8,7 @@ import { dbSave } from "../utils/dbUtils";
 
 type AssignmentsContextType = {
     assignments: Assignment[]
-    storeAssignments: (data: ["value", Assignment[]] | ["operation", (input: Assignment[]) => Assignment[]]) => Assignment[],
+    storeAssignments: (input: Assignment[] | ((input: Assignment[]) => Assignment[])) => Assignment[],
     hydrate: (value: AssignmentInfo) => Assignment
     isTemplate: boolean
     setIsTemplate: React.Dispatch<React.SetStateAction<boolean>>

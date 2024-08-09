@@ -17,7 +17,7 @@ interface useAssignmentsProps {
 
 }
 
-export function useAssignments({username, iv, token, navigate, saveToDb, setIsSaving, setSafeTimeout}: useAssignmentsProps): [Assignment[], (data: ["value", Assignment[]] | ["operation", (input: Assignment[]) => Assignment[]]) => Assignment[], (value: AssignmentInfo) => Assignment] {
+export function useAssignments({username, iv, token, navigate, saveToDb, setIsSaving, setSafeTimeout}: useAssignmentsProps): [Assignment[], (input: Assignment[] | ((input: Assignment[]) => Assignment[])) => Assignment[], (value: AssignmentInfo) => Assignment] {
     const apiUrl = import.meta.env.VITE_API_URL
 
     const dbInit = useRef(false)
@@ -28,7 +28,7 @@ export function useAssignments({username, iv, token, navigate, saveToDb, setIsSa
             id: newID,
             isStatusHovered: false,
             handleCompleted: () => {
-                const updatedAssignments = storeAssignments(["operation", prev => prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment)])
+                const updatedAssignments = storeAssignments(prev => prev.map(assignment => assignment.id == newID ? {...assignment, status: assignment.status === "Completed" ? "Not Completed" : "Completed"} : assignment))
                 const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
                 localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
                 console.log("Saving assignmentsInfo to local storage")
@@ -37,7 +37,7 @@ export function useAssignments({username, iv, token, navigate, saveToDb, setIsSa
                 setSafeTimeout(handleSave, 10000)
             },
             handleRemove: () => {
-                const updatedAssignments = storeAssignments(["operation", prev => prev.filter(assignment => assignment.id !== newID)])
+                const updatedAssignments = storeAssignments(prev => prev.filter(assignment => assignment.id !== newID))
 
                 const updatedAssignmentsInfo = updatedAssignments.map(assignment => dehydrate(assignment))
                 localStorage.setItem("assignments", JSON.stringify(updatedAssignmentsInfo))
@@ -89,7 +89,7 @@ export function useAssignments({username, iv, token, navigate, saveToDb, setIsSa
             switch (response.status) {
                 case 200:
                     const {assignments: dbAssignmentsInfo} = data
-                    storeAssignments(["value", dbAssignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo))])
+                    storeAssignments(dbAssignmentsInfo.map(assignmentInfo => hydrate(assignmentInfo)))
                     localStorage.setItem("assignments", JSON.stringify(dbAssignmentsInfo))
                     console.log("Saving fetched assignmentsInfo to local storage")
                     break
